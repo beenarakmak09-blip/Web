@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ParcelTrack Logistics | ระบบติดตามพัสดุสำหรับองค์กร</title>
+  <link rel="stylesheet" href="xlsx.css" />
+</head>
+
+<body>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="container topbar-inner">
+      <div class="topbar-left">
+        <span>📍 Thailand</span>
+        <span class="dot">•</span>
+        <span>Support: 02-000-0000</span>
+        <span class="dot">•</span>
+        <span>Email: support@parceltrack.co</span>
+      </div>
+      <div class="topbar-right">
+        <a href="#tracking">Tracking</a>
+        <span class="dot">•</span>
+        <a href="#contact">Contact</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container nav-inner">
+      <div class="nav-left">
+        <div class="logo">
+          <span class="logo-mark">PT</span>
+          <div class="logo-texts">
+            <div class="logo-title">ParcelTrack Logistics</div>
+            <div class="logo-sub">Enterprise Tracking Dashboard</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav-links">
+        <a href="#services">บริการ</a>
+        <a href="#tracking">ติดตามพัสดุ</a>
+        <a href="#excel">Dashboard</a>
+        <a href="#map">Fleet Map</a>
+        <a href="#about">เกี่ยวกับเรา</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a class="nav-btn ghost" href="#excel">ดูรายงาน</a>
+        <a class="nav-btn primary" href="#tracking">Track Now</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container hero-grid">
+
+      <div class="hero-left">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          <span>ระบบติดตามพัสดุสำหรับบริษัท (Demo)</span>
+        </div>
+
+        <h1>
+          Logistics Tracking Platform<br />
+          สำหรับองค์กรและธุรกิจขนส่ง
+        </h1>
+
+        <p class="hero-desc">
+          แสดงข้อมูลพัสดุจาก Google Sheets และแผนที่จาก Google My Maps
+          เพื่อจำลองระบบ Tracking & Fleet Monitoring แบบกึ่ง Real-time
+          ในรูปแบบ Dashboard ระดับองค์กร
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn primary" href="#tracking">เริ่มติดตามพัสดุ</a>
+          <a class="btn outline" href="#services">ดูบริการของเรา</a>
+        </div>
+
+        <div class="hero-kpi">
+          <div class="kpi-card">
+            <div class="kpi-title">Active Shipments</div>
+            <div class="kpi-value" data-count="19">0</div>
+            <div class="kpi-sub">รายการกำลังจัดส่ง</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-title">Update Mode</div>
+            <div class="kpi-value">Semi</div>
+            <div class="kpi-sub">Refresh ตามรอบเวลา</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-title">Coverage</div>
+            <div class="kpi-value">Nationwide</div>
+            <div class="kpi-sub">รองรับหลายพื้นที่</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <div class="hero-panel">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Quick Tracking</div>
+              <div class="panel-sub">กรอกเลขพัสดุเพื่อค้นหา (Demo UI)</div>
+            </div>
+            <span class="chip">Secure</span>
+          </div>
+
+        <form class="track-form" onsubmit="event.preventDefault(); trackShipment();">
+          <label class="field">
+            <span>Tracking Number</span>
+            <input type="text" id="trackingInput" placeholder="เช่น TH9963334018" />
+          </label>
+
+          <button class="btn primary full" type="submit">Track Shipment</button>
+
+          <!-- กล่องแสดงผล -->
+          <div id="trackResult" style="display:none;margin-top:16px;padding:14px;border-radius:12px;background:#0f172a;color:#fff">
+            <div><b>Tracking:</b> <span id="r-track"></span></div>
+            <div><b>สถานะ:</b> <span id="r-status"></span></div>
+            <div><b>ปลายทาง:</b> <span id="r-dest"></span></div>
+            <div><b>อัปเดตล่าสุด:</b> <span id="r-time"></span></div>
+          </div>
+
+          <div class="mini-note">
+            * Demo: ค้นหาจาก Google Sheets
+          </div>
+        </form>
+
+
+          <div class="panel-footer">
+            <div class="mini-stat">
+              <div class="mini-label">On-time Rate</div>
+              <div class="mini-val">96%</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-label">Support SLA</div>
+              <div class="mini-val">24/7</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-label">Scan Events</div>
+              <div class="mini-val">Realtime*</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Main -->
+  <main>
+
+    <!-- Services -->
+    <section class="section" id="services">
+      <div class="container section-head">
+        <div>
+          <h2>บริการของเรา</h2>
+          <p class="section-desc">
+            โซลูชันโลจิสติกส์สำหรับองค์กร ครอบคลุมตั้งแต่รับสินค้า จัดส่ง และติดตามแบบครบวงจร
+          </p>
+        </div>
+      </div>
+
+      <div class="container service-grid">
+        <div class="service-card">
+          <div class="service-icon">🚚</div>
+          <h3>Last-mile Delivery</h3>
+          <p>จัดส่งปลายทางรวดเร็ว พร้อมสถานะอัปเดตเป็นช่วงเวลา</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">🏢</div>
+          <h3>Warehouse & Hub</h3>
+          <p>รองรับศูนย์กระจายสินค้า พร้อมระบบจัดการรายการพัสดุ</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">📍</div>
+          <h3>Fleet Tracking</h3>
+          <p>ดูตำแหน่งบนแผนที่ พร้อมจุดสถานะการขนส่งหลายจุด</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-icon">📊</div>
+          <h3>Dashboard & Report</h3>
+          <p>ดูข้อมูลพัสดุและรายงาน KPI แบบ Dashboard ระดับองค์กร</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tracking CTA -->
+    <section class="section" id="tracking">
+      <div class="container tracking-cta">
+        <div class="tracking-cta-left">
+          <h2>ติดตามพัสดุของคุณได้ทันที</h2>
+          <p>
+            ระบบ Dashboard จะแสดง Tracking Number, สถานะ, พิกัด Latitude/Longitude และเวลาที่อัปเดตล่าสุด
+          </p>
+        </div>
+        <div class="tracking-cta-right">
+          <a class="btn primary" href="#excel">ไปหน้า Dashboard</a>
+          <a class="btn outline" href="#map">ดู Fleet Map</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Excel/Sheets -->
+    <section class="section" id="excel">
+      <div class="container section-head">
+        <div>
+          <h2>Dashboard: Shipment Status (Google Sheets)</h2>
+          <p class="section-desc">
+            Embedded Viewer สำหรับทีมปฏิบัติการและผู้จัดการ เพื่อดูข้อมูลล่าสุดจากชีต
+          </p>
+        </div>
+
+        <div class="mini-actions">
+          <span class="chip">Operations View</span>
+          <a class="chip chip-link" target="_blank"
+             href="https://docs.google.com/spreadsheets/d/e/2PACX-1vR7nyG3suBauuocyKVDDyIAK14KgyVS8KDjslP5SJSNZuo22nYxcdL-6GRHmqJWEw/pubhtml?widget=true&amp;headers=false">
+            เปิดชีตเต็มจอ ↗
+          </a>
+        </div>
+      </div>
+
+      <div class="container card">
+        <div class="card-top">
+          <div>
+            <div class="card-title">Live Sheet Dashboard</div>
+            <div class="card-sub">Google Sheets • Publish to Web</div>
+          </div>
+          <div class="right-badges">
+            <span class="chip">Tracking 10–15</span>
+            <span class="chip">Semi Real-time</span>
+          </div>
+        </div>
+
+        <div class="iframe-wrap">
+          <iframe
+            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vR7nyG3suBauuocyKVDDyIAK14KgyVS8KDjslP5SJSNZuo22nYxcdL-6GRHmqJWEw/pubhtml?widget=true&amp;headers=false"
+            loading="lazy"
+            allowfullscreen>
+          </iframe>
+        </div>
+
+        <div class="card-footer">
+          <div class="footer-note">
+            *แก้ข้อมูลในชีต → Refresh หน้าเว็บเพื่อดูผลล่าสุด
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Map -->
+    <section class="section" id="map">
+      <div class="container section-head">
+        <div>
+          <h2>Fleet Map: Live Monitoring (Google My Maps)</h2>
+          <p class="section-desc">
+            แสดงตำแหน่งพัสดุ/รถขนส่ง และสถานะ “กำลังจัดส่ง” “จัดส่งแล้ว”
+          </p>
+        </div>
+
+        <div class="mini-actions">
+          <a class="chip chip-link" target="_blank"
+             href="https://www.google.com/maps/d/u/0/viewer?mid=1O3gyCDKhHIPcR0R3p5PSC-52PGiNzbw">
+            เปิดแผนที่เต็มจอ ↗
+          </a>
+        </div>
+      </div>
+
+      <div class="container card">
+        <div class="card-top">
+          <div>
+            <div class="card-title">Live Map Viewer</div>
+            <div class="card-sub">Google My Maps • Multi-point Pins</div>
+          </div>
+          <span class="chip">Fleet View</span>
+        </div>
+
+        <div class="iframe-wrap">
+          <iframe
+            src="https://www.google.com/maps/d/embed?mid=1O3gyCDKhHIPcR0R3p5PSC-52PGiNzbw"
+            loading="lazy"
+            allowfullscreen>
+          </iframe>
+        </div>
+
+        <div class="card-footer">
+          <div class="footer-note">
+            *อัปเดตหมุดโดยแก้ใน Google My Maps
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="section" id="about">
+      <div class="container card about">
+        <h3>เกี่ยวกับระบบ (Demo)</h3>
+        <ul>
+          <li>ข้อมูลพัสดุจัดเก็บใน Excel/Google Sheets (Lat/Lon + Timestamp)</li>
+          <li>แผนที่ใช้ Google My Maps เพื่อ Plot ตำแหน่งแบบหลายจุด</li>
+          <li>หน้าเว็บทำหน้าที่เป็น Dashboard แสดงข้อมูลและแผนที่แบบ Embed</li>
+        </ul>
+
+        <div class="note">
+          <b>หมายเหตุ:</b> ระบบนี้เป็นการจำลองเพื่อการเรียนรู้
+          หากทำจริงควรใช้ฐานข้อมูล + API + Map SDK เพื่อ Real-time จริง
+        </div>
+
+        <hr class="divider" />
+
+        <h4>ข้อจำกัดของ Excel กับระบบ Real-time</h4>
+        <ul>
+          <li>Excel ไม่ใช่ระบบ Real-time จริง ต้อง Refresh และรองรับหลายผู้ใช้ได้น้อย</li>
+        </ul>
+
+        <h4>ถ้าทำระบบจริงควรใช้เครื่องมืออะไรแทน</h4>
+        <ul>
+          <li><b>Firebase</b>: อัปเดตแบบเรียลไทม์ง่าย เชื่อมเว็บ/มือถือดี</li>
+          <li><b>Node.js + Database</b>: รองรับข้อมูลเยอะและหลายผู้ใช้</li>
+          <li><b>Google Maps API / Leaflet</b>: แผนที่สวย แม่นยำ และยืดหยุ่น</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="section" id="contact">
+      <div class="container contact-grid">
+        <div class="contact-card">
+          <h3>ติดต่อเรา</h3>
+          <p class="muted">
+            สำหรับ Demo งานส่ง/โปรเจกต์ สามารถใส่ข้อมูลบริษัทสมมติได้
+          </p>
+
+          <div class="contact-info">
+            <div><b>บริษัท:</b> ParcelTrack Logistics Co., Ltd.</div>
+            <div><b>โทร:</b> 02-000-0000</div>
+            <div><b>อีเมล:</b> support@parceltrack.co</div>
+            <div><b>เวลาทำการ:</b> จันทร์–ศุกร์ 09:00–18:00</div>
+          </div>
+        </div>
+
+        <div class="contact-card">
+          <h3>ขอใบเสนอราคา (Demo Form)</h3>
+
+          <form class="quote-form" onsubmit="event.preventDefault(); alert('Demo: ส่งฟอร์มสำเร็จ');">
+            <label class="field">
+              <span>ชื่อบริษัท</span>
+              <input type="text" placeholder="เช่น ABC จำกัด" required />
+            </label>
+
+            <label class="field">
+              <span>อีเมล</span>
+              <input type="email" placeholder="example@email.com" required />
+            </label>
+
+            <label class="field">
+              <span>รายละเอียดงาน</span>
+              <textarea placeholder="เช่น ต้องการระบบติดตามพัสดุ + แผนที่ + รายงาน KPI" required></textarea>
+            </label>
+
+            <button class="btn primary full" type="submit">ส่งคำขอ</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <p>© 2026 ParcelTrack Logistics • Corporate Demo Website</p>
+        <p class="muted">Made for Assignment • UI/UX Logistics Dashboard</p>
+      </div>
+    </footer>
+
+  </main>
+
+  <script>
+    // Count-up animation
+    const counters = document.querySelectorAll(".kpi-value[data-count]");
+    counters.forEach((el) => {
+      const target = parseInt(el.dataset.count, 10);
+      let current = 0;
+
+      const duration = 900;
+      const stepTime = 18;
+      const steps = Math.ceil(duration / stepTime);
+      const increment = target / steps;
+
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) {
+          el.textContent = target;
+          clearInterval(timer);
+        } else {
+          el.textContent = Math.floor(current);
+        }
+      }, stepTime);
+    });
+  </script>
+
+
+<script>
+async function trackShipment() {
+  const input = document.getElementById("trackingInput");
+  const trackingNo = input.value.trim();
+
+  if (!trackingNo) {
+    alert("กรุณาใส่เลขพัสดุ");
+    return;
+  }
+
+  const SHEET_CSV_URL =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vR7nyG3suBauuocyKVDDyIAK14KgyVS8KDjslP5SJSNZuo22nYxcdL-6GRHmqJWEw/pub?output=csv";
+
+  const res = await fetch(SHEET_CSV_URL);
+  const text = await res.text();
+
+  const rows = text
+    .split("\n")
+    .map(r => r.replace(/\r/g, "").split(";")) // ✅ ใช้ ;
+    .slice(1);
+
+  const found = rows.find(r =>
+    r[0]?.replace(/"/g, "").trim() === trackingNo
+  );
+
+  const box = document.getElementById("trackResult");
+
+  if (!found) {
+    box.style.display = "block";
+    box.innerHTML = `<b style="color:#f87171">❌ ไม่พบเลขพัสดุ ${trackingNo}</b>`;
+    return;
+  }
+
+  document.getElementById("r-track").textContent = found[0].trim();
+  document.getElementById("r-status").textContent = found[3].trim();
+  document.getElementById("r-dest").textContent = found[2]; // ชื่อผู้รับ
+  document.getElementById("r-time").textContent = found[6].trim();
+
+  box.style.display = "block";
+}
+</script>
+
+</body>
+</html>

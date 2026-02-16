@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Logistics Admin Dashboard</title>
+
+<link rel="stylesheet" href="analysis.css">
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="logo">
+        <i class="fa-solid fa-truck-fast"></i> Logistics Admin Dashboard
+    </div>
+    <div class="user">Admin</div>
+</div>
+
+<div class="container">
+
+<!-- HEADER -->
+<div class="header">
+    <h1>Service Order Dashboard</h1>
+    <div>
+        <button onclick="loadFromGoogleSheet()">
+            <i class="fa-solid fa-cloud-arrow-down"></i> โหลดข้อมูล
+        </button>
+        <button onclick="exportCSV()">
+            <i class="fa-solid fa-file-export"></i> Export CSV
+        </button>
+    </div>
+</div>
+
+<!-- FILTER -->
+<div class="filters">
+    <select id="serviceFilter" onchange="applyFilter()">
+        <option value="All">All Services</option>
+    </select>
+
+    <select id="paymentFilter" onchange="applyFilter()">
+        <option value="All">All Payment Status</option>
+    </select>
+
+    <select id="statusFilter" onchange="applyFilter()">
+        <option value="All">All Service Status</option>
+    </select>
+
+    <input type="text" id="searchBox"
+           placeholder="🔍 ค้นหาข้อมูล..."
+           onkeyup="applyFilter()">
+</div>
+
+<!-- KPI (STICKY) -->
+<div class="kpi-container sticky-kpi">
+    <div class="kpi revenue">
+        <i class="fa-solid fa-baht-sign"></i>
+        <div>
+            <h3>Total Revenue</h3>
+            <p id="totalRevenue">-</p>
+        </div>
+    </div>
+
+    <div class="kpi delivery">
+        <i class="fa-solid fa-truck"></i>
+        <div>
+            <h3>Delivery Revenue</h3>
+            <p id="deliveryRevenue">-</p>
+        </div>
+    </div>
+
+    <div class="kpi paid">
+        <i class="fa-solid fa-circle-check"></i>
+        <div>
+            <h3>Paid Orders</h3>
+            <p id="paidOrders">-</p>
+        </div>
+    </div>
+
+    <div class="kpi unpaid">
+        <i class="fa-solid fa-circle-xmark"></i>
+        <div>
+            <h3>Not Paid Orders</h3>
+            <p id="notPaidOrders">-</p>
+        </div>
+    </div>
+
+    <div class="kpi rate">
+        <i class="fa-solid fa-percent"></i>
+        <div>
+            <h3>Paid Rate</h3>
+            <p id="paidRate">-</p>
+        </div>
+    </div>
+</div>
+
+<!-- STATUS PROGRESS -->
+<div class="card">
+    <h2>🚦 Service Status Progress</h2>
+    <div id="statusProgress"></div>
+</div>
+
+<!-- TOP / RANKING -->
+<div class="grid-2">
+    <div class="card">
+        <h2>🏆 Top 5 Services (Revenue)</h2>
+        <ul id="topServiceList" class="rank-list"></ul>
+    </div>
+
+    <div class="card">
+        <h2>📈 Revenue Trend</h2>
+        <canvas id="trendChart"></canvas>
+    </div>
+</div>
+
+<!-- CHARTS -->
+<div class="grid-2">
+    <div class="card">
+        <h2>Revenue by Service</h2>
+        <canvas id="revenueChart"></canvas>
+    </div>
+
+    <div class="card">
+        <h2>Payment Status</h2>
+        <canvas id="paymentChart"></canvas>
+    </div>
+</div>
+
+<!-- TABLE -->
+<div class="table-card">
+    <h2>Service Order List</h2>
+    <div class="table-wrapper">
+        <table id="dataTable">
+            <thead></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+</div>
+
+<script>
+let rawData = [];
+let filteredData = [];
+let revenueChart, paymentChart, trendChart;
+
+function loadFromGoogleSheet() {
+    const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTXakydwpKdS7viE-AMuMvyzVjMN6U5DS6TMwxjRhtyWczkv0Mw6PU2QMBmYYVowg/pub?output=csv";
+
+    fetch(url)
+        .then(res => res.text())
+        .then(csv => {
+            const rows = csv.trim().split("\n").map(r => r.split(","));
+            const headers = rows[0];
+
+            rawData = rows.slice(1).map(row => {
+                let obj = {};
+                headers.forEach((h, i) => obj[h.trim()] = row[i]?.trim());
+                return obj;
+            });
+
+            initFilters(rawData);
+            filteredData = rawData;
+            updateDashboard(filteredData);
+        });
+}
+
+function initFilters(data) {
+    fillSelect("serviceFilter", data.map(d => d["Service Name"]));
+    fillSelect("paymentFilter", data.map(d => d["Payment Status"]));
+    fillSelect("statusFilter", data.map(d => d["Service Status"]));
+}
+
+function fillSelect(id, values) {
+    const select = document.getElementById(id);
+
+    // เก็บ option แรกไว้ (All ...)
+    const firstOption = select.querySelector("option").outerHTML;
+
+    // clear ของเก่า
+    select.innerHTML = firstOption;
+
+    // ใส่เฉพาะค่าที่ไม่ซ้ำ
+    [...new Set(values)]
+        .filter(v => v)
+        .forEach(v => {
+            const opt = document.createElement("option");
+            opt.value = v;
+            opt.textContent = v;
+            select.appendChild(opt);
+        });
+}
+
+function applyFilter() {
+    const s  = document.getElementById("serviceFilter").value;
+    const p  = document.getElementById("paymentFilter").value;
+    const st = document.getElementById("statusFilter").value;
+    const q  = document.getElementById("searchBox").value.toLowerCase();
+
+    filteredData = rawData.filter(d =>
+        (s === "All" || d["Service Name"] === s) &&
+        (p === "All" || d["Payment Status"] === p) &&
+        (st === "All" || d["Service Status"] === st) &&
+        Object.values(d).join(" ").toLowerCase().includes(q)
+    );
+
+    updateDashboard(filteredData);
+}
+
+
+function updateDashboard(data) {
+    renderTable(data);
+    calculateKPI(data);
+    drawRevenueChart(data);
+    drawPaymentChart(data);
+    drawTrendChart(data);
+    renderTopServices(data);
+    renderStatusProgress(data);
+}
+
+/* ================= KPI ================= */
+function calculateKPI(data) {
+    let total = 0, delivery = 0, paid = 0, notPaid = 0;
+
+    data.forEach(r => {
+        const price = +r["Service Price Incl. VAT"] || 0;
+        total += price;
+        if (r["Service Name"] === "Delivery Service") delivery += price;
+        if (r["Payment Status"] === "Paid") paid++;
+        if (r["Payment Status"] === "Not Paid") notPaid++;
+    });
+
+    totalRevenue.innerText = total.toLocaleString() + " บาท";
+    deliveryRevenue.innerText = delivery.toLocaleString() + " บาท";
+    paidOrders.innerText = paid;
+    notPaidOrders.innerText = notPaid;
+    paidRate.innerText =
+        ((paid / Math.max(1, paid + notPaid)) * 100).toFixed(1) + "%";
+}
+
+/* ================= TOP 5 ================= */
+function renderTopServices(data) {
+    const map = {};
+    data.forEach(r => {
+        const s = r["Service Name"];
+        map[s] = (map[s] || 0) + (+r["Service Price Incl. VAT"] || 0);
+    });
+
+    const list = Object.entries(map)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+    topServiceList.innerHTML = list.map(
+        ([name, val], i) =>
+        `<li>
+            <span>#${i+1} ${name}</span>
+            <strong>${val.toLocaleString()} บาท</strong>
+        </li>`
+    ).join("");
+}
+
+/* ================= STATUS PROGRESS ================= */
+function renderStatusProgress(data) {
+    const total = data.length;
+    const map = {};
+
+    data.forEach(r => {
+        const s = r["Service Status"] || "Unknown";
+        map[s] = (map[s] || 0) + 1;
+    });
+
+    statusProgress.innerHTML = Object.entries(map).map(([s, c]) => {
+        const pct = ((c / total) * 100).toFixed(0);
+        return `
+        <div class="progress-row">
+            <span>${s}</span>
+            <div class="bar">
+                <div class="fill" style="width:${pct}%"></div>
+            </div>
+            <span>${pct}%</span>
+        </div>`;
+    }).join("");
+}
+
+/* ================= TREND ================= */
+function drawTrendChart(data) {
+    const map = {};
+    data.forEach(r => {
+        const date = r["Order Date"] || "Unknown";
+        map[date] = (map[date] || 0) + (+r["Service Price Incl. VAT"] || 0);
+    });
+
+    if (trendChart) trendChart.destroy();
+
+    trendChart = new Chart(
+        document.getElementById("trendChart"),
+        {
+            type: "line",
+            data: {
+                labels: Object.keys(map),
+                datasets: [{
+                    data: Object.values(map),
+                    tension: 0.4,
+                    borderWidth: 2
+                }]
+            },
+            options: { plugins: { legend: { display: false } } }
+        }
+    );
+}
+
+/* ================= CHARTS ================= */
+function drawRevenueChart(data) {
+    const map = {};
+    data.forEach(r => {
+        const name = r["Service Name"];
+        map[name] = (map[name] || 0) + (+r["Service Price Incl. VAT"] || 0);
+    });
+
+    if (revenueChart) revenueChart.destroy();
+
+    revenueChart = new Chart(
+        document.getElementById("revenueChart"),
+        {
+            type: "bar",
+            data: {
+                labels: Object.keys(map),
+                datasets: [{ data: Object.values(map) }]
+            },
+            options: { plugins: { legend: { display: false } } }
+        }
+    );
+}
+
+function drawPaymentChart(data) {
+    let paid = 0, notPaid = 0;
+    data.forEach(r => {
+        if (r["Payment Status"] === "Paid") paid++;
+        if (r["Payment Status"] === "Not Paid") notPaid++;
+    });
+
+    if (paymentChart) paymentChart.destroy();
+
+    paymentChart = new Chart(
+        document.getElementById("paymentChart"),
+        {
+            type: "doughnut",
+            data: {
+                labels: ["Paid", "Not Paid"],
+                datasets: [{ data: [paid, notPaid] }]
+            }
+        }
+    );
+}
+
+/* ================= TABLE ================= */
+function renderTable(data) {
+    const thead = dataTable.querySelector("thead");
+    const tbody = dataTable.querySelector("tbody");
+    thead.innerHTML = tbody.innerHTML = "";
+
+    if (!data.length) return;
+
+    const headers = Object.keys(data[0]);
+    thead.innerHTML =
+        "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
+
+    data.forEach(r => {
+        tbody.innerHTML +=
+            "<tr>" +
+            headers.map(h => `<td>${r[h] || ""}</td>`).join("") +
+            "</tr>";
+    });
+}
+
+/* ================= EXPORT ================= */
+function exportCSV() {
+    if (!filteredData.length) return;
+    const headers = Object.keys(filteredData[0]);
+    let csv = headers.join(",") + "\n";
+    filteredData.forEach(r => {
+        csv += headers.map(h => `"${r[h] || ""}"`).join(",") + "\n";
+    });
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "service_orders.csv";
+    a.click();
+}
+</script>
+</body>
+</html>
